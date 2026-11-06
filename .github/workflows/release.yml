@@ -2,10 +2,22 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to publish or repair (for example v0.1.0)'
+        required: true
+        type: string
 permissions:
   contents: read
 jobs:
   release:
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    concurrency:
+      group: release-${{ inputs.tag || github.ref_name }}
+      cancel-in-progress: false
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -13,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: refs/tags/${{ inputs.tag || github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -21,11 +34,12 @@ jobs:
           git fetch origin main
           git merge-base --is-ancestor HEAD origin/main
       - name: Validate version and package addon
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: python tools/package.py "$RELEASE_TAG"
       - name: Publish installable addon
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" dist/*.zip --verify-tag --title "Forever Quest Hider $RELEASE_TAG" --generate-notes
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --title "Forever Quest Hider $RELEASE_TAG" --generate-notes
+          fi
+          gh release upload "$RELEASE_TAG" dist/*.zip --clobber
