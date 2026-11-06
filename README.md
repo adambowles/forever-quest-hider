@@ -42,3 +42,9 @@ After merging the PR, tag the merged commit `v0.1.0` and push the tag to publish
 Automated Lua 5.1 tests use mocked WoW APIs. They cannot prove in-game protection/taint or controller behaviour. Before considering this release verified, test login/reload, quest updates, entering/leaving combat, keyboard/gamepad mode changes, and opening/closing HUD navigation (including quest selection). Use `/fth off` to restore visibility if necessary.
 
 Implementation is original. Research: [Polestar's deliberate gamepad exclusion](https://github.com/fitzforge/polestar/blob/main/addon/Polestar/QoL/Toggles.lua) and [Blizzard HUD navigation source](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_Gamepad/UI/HUDMode/GamepadHudMode.lua).
+
+### Recover an existing release
+
+If the release already exists (including one created in GitHub's UI), the workflow uploads the installable ZIP to it and preserves the release notes. Reruns replace the asset of the same name. Different release tags are serialized independently.
+
+To repair an earlier release after merging a workflow fix: Actions → Release → Run workflow, select `main`, and enter the original tag (for example `v0.1.0`). This checks out that tag, verifies its commit is contained in main, validates its TOC version and builds that original version. Do not move or recreate the tag. Manual recovery is allowed only from main.
