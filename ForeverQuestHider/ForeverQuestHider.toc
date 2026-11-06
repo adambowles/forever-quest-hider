@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: Forever Quest Hider
+## Notes: Hides the objective tracker while preserving gamepad HUD navigation.
+## Author: Adam Bowles
+## Version: 0.1.0
+## SavedVariablesPerCharacter: ForeverQuestHiderDB
+
+Core.lua
